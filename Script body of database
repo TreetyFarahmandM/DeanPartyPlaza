@@ -1,0 +1,107 @@
+
+CREATE TABLE ProductType
+(
+ProductTypeNo int NOT NULL,
+TypeDesc varchar(40)NOT NULL,
+CONSTRAINT pkProductTypeNo PRIMARY KEY (ProductTypeNo),
+CONSTRAINT unqTypeDesc UNIQUE (TypeDesc)
+)
+print N'Creating the Supplier table'
+create table Supplier
+(
+--Supplier (SupplierNo, BusinessName, Forename, Surname, Street, Town, County, Postcode, TelNo, Email) 
+	SupplierNo			int						not null,
+	BusinessName		varchar(20)				not null,
+	Forename			varchar(20)				not null,
+	Surname				varchar(20)				not null,
+	Street				varchar(30)				not null,
+	Town				varchar(30)				not null,
+	County				varchar(30)				not null,
+	Postcode			varchar(7)				not null,
+	TelNo				varchar(11)				not null,
+	Email				varchar					not null,
+
+	constraint PKSupplier primary key (SupplierNo),
+)
+go
+go
+CREATE TABLE Product 
+(
+ProductNo int NOT NULL,
+SupplierNo int null,
+ProductTypeNo int not null,
+ProductDesc varchar(40) not null,
+CostPrice money not null,
+SellingPrice money null,
+QtyStock int not null,
+CONSTRAINT pkProductNo PRIMARY KEY (ProductNo),
+CONSTRAINT fkProductTypeNo FOREIGN KEY (ProductTypeNo) REFERENCES ProductType (ProductTypeNo),
+CONSTRAINT chkCostPrice CHECK (CostPrice > -0.01),
+CONSTRAINT chkSellingPrice CHECK (SellingPrice > -0.01),
+CONSTRAINT chkQtyStock CHECK (QtyStock > -1)
+)
+CREATE TABLE Customer
+(
+CustomerNo int NOT NULL,
+Surname varchar(20)NOT NULL,
+Forename varchar(20)NOT NULL,
+Street varchar(30)NOT NULL,
+Town varchar(30)NOT NULL,
+County varchar(30)NOT NULL,
+PostCode varchar(8)NOT NULL,
+TelNo varchar(11)NOT NULL,
+Email varchar(25) not null, 
+CONSTRAINT pkCustNo PRIMARY KEY (CustomerNo),
+CONSTRAINT chkPostcode CHECK (Postcode LIKE '[A-Z][A-Z][0-9][0-9] [0-9][A-Z]
+[A-Z]'),
+CONSTRAINT chkTelNo CHECK (TelNo LIKE REPLICATE('[0-9]', 11))
+)
+
+print N'Creating the Order table'
+create table Orders
+(
+--Order (OrderNo, OrderDate)
+	OrderNo				int						not null,
+	OrderDate			date					not null,
+
+	constraint PKOrder primary key (OrderNo),
+)
+go
+CREATE TABLE Booking 
+(
+BookingNo int NOT NULL,
+CustomerNo int NOT NULL,
+BookingDate datetime NOT NULL,
+BookingTime datetime NOT NULL,
+Duration int NOT NULL,
+CONSTRAINT pkBookingNo PRIMARY KEY (BookingNo),
+CONSTRAINT fkCustomerNo2 FOREIGN KEY (CustomerNo) REFERENCES Customer 
+(CustomerNo),
+CONSTRAINT chkDOB2 CHECK (BookingTime >= BookingDate ),
+CONSTRAINT chkDuration CHECK (Duration > 0)
+)
+CREATE TABLE BookingDet
+(
+BookingNo int   NOT NULL,
+ProductNo int NOT NULL,
+Qty int NOT NULL,
+CONSTRAINT pkBookingDet PRIMARY KEY (BookingNo, ProductNo),
+CONSTRAINT fkBookingNo FOREIGN KEY (BookingNo) REFERENCES Booking 
+(BookingNo),
+CONSTRAINT fkProductNo2 FOREIGN KEY (ProductNo) REFERENCES Product (ProductNo),
+CONSTRAINT chkQty CHECK (Qty > 0),
+)
+print N'Creating ProductOrder table'
+create table ProductOrder
+(
+-- ProductOrder (*OrderNo, *ProductNo, QTYOredered) 
+	OrderNo			int			not null,
+	ProductNo		int			not null,
+	QTYOrdered		int			not null,
+
+	constraint PKProductOrder primary key (OrderNo, ProductNo),
+
+	constraint FKProductOrderToOrder foreign key (OrderNo) references Orders(OrderNo),
+	constraint FKProductOrderToProduct  foreign key (ProductNo) references Product(ProductNo)
+)
+go
